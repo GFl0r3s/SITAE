@@ -1,0 +1,2 @@
+.logincaja { min-height:100vh; display:grid; place-items:center; background:linear-gradient(160deg,var(--navy) 55%,var(--sky)); padding:1rem; }
+.logincajablanca { width:min(400px,92vw); background:#fff; border-radius:10px; box-shadow:0 15px 25px #0004; border:0; }

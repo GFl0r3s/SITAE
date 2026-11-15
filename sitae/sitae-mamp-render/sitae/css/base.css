@@ -1,0 +1,7 @@
+:root { --navy:#0b2a5b; --sky:#1b7fd1; --paper:#f3f5f8; }
+[hidden] { display:none !important; }
+body { background:var(--paper); font-family:"Segoe UI",system-ui,sans-serif; }
+.topbar { background:var(--navy); color:#fff; }
+.brand { font-weight:700; letter-spacing:.04em; }
+.brand small { display:block; font-weight:400; font-size:.7rem; letter-spacing:0; opacity:.8; }
+.titulo { color:var(--navy); }
