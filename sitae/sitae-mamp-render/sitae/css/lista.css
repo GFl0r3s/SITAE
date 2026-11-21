@@ -1,3 +1,16 @@
 .table thead th { background:var(--navy); color:#fff; font-weight:600; white-space:nowrap; }
 .badge-v { background:#198754; }
 .badge-x { background:#c0392b; }
+
+/* Celular: cada fila se convierte en una tarjeta (usa data-label en cada celda) */
+@media (max-width:767.98px) {
+  .contenedor-tabla { background:transparent !important; box-shadow:none !important; overflow:visible; }
+  .tabla-cards thead { display:none; }
+  .tabla-cards, .tabla-cards tbody, .tabla-cards tr, .tabla-cards td { display:block; width:100%; }
+  .tabla-cards tr { background:var(--bs-body-bg); border:1px solid var(--bs-border-color); border-radius:.6rem; margin-bottom:.75rem; padding:.35rem .6rem; box-shadow:0 1px 3px #0002; }
+  .tabla-cards td { display:flex; justify-content:space-between; align-items:center; gap:1rem; border:0 !important; padding:.3rem 0; text-align:right; background:transparent !important; box-shadow:none !important; }
+  .tabla-cards td::before { content:attr(data-label); font-weight:600; text-align:left; color:var(--bs-secondary-color); flex:0 0 auto; }
+  .tabla-cards td.acciones { justify-content:flex-end; flex-wrap:wrap; padding-top:.5rem; }
+  .tabla-cards td.acciones::before, .tabla-cards td.sin-datos::before { display:none; }
+  .tabla-cards td.sin-datos { justify-content:center; }
+}

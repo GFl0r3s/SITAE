@@ -5,4 +5,5 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 };
 const estado = l => l.vencimiento && l.vencimiento < today() ? 'VENCIDA' : 'VIGENTE';
+const fmtHora = s => { const m = String(s ?? '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : ''; };
 const fmt = d => d ? d.split('-').reverse().join('/') : '';

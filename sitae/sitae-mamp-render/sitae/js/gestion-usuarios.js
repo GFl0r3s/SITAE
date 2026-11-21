@@ -28,5 +28,5 @@ function limpiarUsuario() {
 }
 async function listarUsuarios() {
   usuarios=(await api('usuarios.php')).usuarios;
-  $('#usuariosRows').innerHTML=usuarios.map(u=>`<tr><td>${esc(u.usuario)}</td><td>${esc(u.nombre)}</td><td>${esc(u.rol)}</td><td>${Number(u.activo)?'Activo':'Inactivo'}</td><td><button class="btn btn-sm btn-outline-primary" data-user="${esc(u.id)}">Editar</button></td></tr>`).join('');
+  $('#usuariosRows').innerHTML=usuarios.map(u=>`<tr><td data-label="Usuario">${esc(u.usuario)}</td><td data-label="Nombre">${esc(u.nombre)}</td><td data-label="Rol">${esc(u.rol)}</td><td data-label="Estado">${Number(u.activo)?'Activo':'Inactivo'}</td><td class="acciones"><button class="btn btn-sm btn-outline-primary" data-user="${esc(u.id)}">Editar</button></td></tr>`).join('');
 }

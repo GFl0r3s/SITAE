@@ -8,7 +8,7 @@ set_exception_handler(function ($e) {
     if (db_en_transaccion()) db()->rollBack();
     error_log((string)$e);
     if ($e instanceof PDOException && in_array((string)$e->getCode(), ['23000','23505'], true)) {
-        responder(['error' => 'Ya existe ese código de licencia o nombre de usuario.'], 409);
+        responder(['error' => 'Ya existe ese código de licencia (puede estar en la papelera) o ese nombre de usuario.'], 409);
     }
     responder(['error' => 'No se pudo completar la operación. Revisa la base de datos, la configuración y el registro de PHP.'], 500);
 });

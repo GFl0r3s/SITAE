@@ -1,7 +1,14 @@
-:root { --navy:#0b2a5b; --sky:#1b7fd1; --paper:#f3f5f8; }
+:root { --navy:#0b2a5b; --sky:#1b7fd1; --paper:#f3f5f8; --titulo:#0b2a5b; }
+[data-bs-theme="dark"] { --paper:#0e1522; --titulo:#8ec5ff; }
 [hidden] { display:none !important; }
 body { background:var(--paper); font-family:"Segoe UI",system-ui,sans-serif; }
 .topbar { background:var(--navy); color:#fff; }
 .brand { font-weight:700; letter-spacing:.04em; }
 .brand small { display:block; font-weight:400; font-size:.7rem; letter-spacing:0; opacity:.8; }
-.titulo { color:var(--navy); }
+.titulo { color:var(--titulo); }
+.tema-switch { display:flex; align-items:center; gap:.4rem; margin:0; color:#fff; }
+.tema-switch .form-check-input { cursor:pointer; margin:0; float:none; }
+@media (max-width:575.98px) {
+  .topbar .container-xl { flex-wrap:wrap; }
+  .brand small { font-size:.62rem; }
+}

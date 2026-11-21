@@ -11,13 +11,15 @@ const EQ = {
   radar:{t:'2.4 Sistema radar',c:[f('tipo','Tipo de equipo'),f('marca','Marca'),f('modelo','Modelo'),f('clase','Clase de emisión'),f('banda','Banda de frecuencia'),f('modulacion','Tipo de modulación'),f('cantidad','Cantidad','number')]},
   emerg:{t:'2.5 Equipos de emergencia',c:[f('tipo','Tipo de equipo'),f('marca','Marca'),f('modelo','Modelo'),f('banda','Banda de frecuencia'),f('cantidad','Cantidad','number')]}
 };
+const OPCIONALES = ['fax','otroTel','observaciones'];
 let contador = 0;
 function campo(x,v,equipo=false) {
   const id = 'campo-'+(++contador);
   const atributo = equipo ? `data-f="${x.n}"` : `name="${x.n}"`;
-  const requerido = !equipo && ['licencia','operador'].includes(x.n) ? 'required' : '';
-  return `<div class="${x.c}"><label for="${id}" class="form-label small mb-1">${x.l}</label>${x.t==='textarea'
-    ? `<textarea id="${id}" class="form-control" ${atributo} rows="3">${esc(v)}</textarea>`
+  const obligatorio = !equipo && !OPCIONALES.includes(x.n);
+  const requerido = obligatorio ? 'required' : '';
+  return `<div class="${x.c}"><label for="${id}" class="form-label small mb-1">${x.l}${obligatorio?' <span class="req text-danger" aria-hidden="true">*</span>':''}</label>${x.t==='textarea'
+    ? `<textarea id="${id}" class="form-control" ${atributo} rows="3" ${requerido}>${esc(v)}</textarea>`
     : `<input id="${id}" class="form-control" type="${x.t}" ${atributo} value="${esc(v)}" ${requerido} ${x.t==='number'?'min="0" step="1"':''}>`}</div>`;
 }
 const grid = (arr,d) => `<div class="row g-3">${arr.map(x=>campo(x,d[x.n])).join('')}</div>`;
@@ -63,9 +65,12 @@ async function guardarLicencia(e) {
   e.preventDefault();
   if (mode==='ver' || !puedeEditar()) return;
   const fd = Object.fromEntries(new FormData(e.target));
+  const etiquetas = {licencia:'Código de licencia', codOperador:'Código aeronave / operador'};
+  [...OPERADOR,...REPRES,...AERONAVE,...ADMIN].forEach(x => etiquetas[x.n] = x.l);
+  const faltan = Object.keys(etiquetas).filter(k => !OPCIONALES.includes(k) && String(fd[k] ?? '').trim() === '').map(k => etiquetas[k]);
+  if (faltan.length) { alert('Completa los campos obligatorios:\n- ' + faltan.join('\n- ')); return; }
   fd.licencia = fd.licencia.trim();
   fd.operador = fd.operador.trim();
-  if (!fd.licencia || !fd.operador) { alert('Completa el código de licencia y el operador.'); return; }
   if (fd.emision && fd.vencimiento && fd.vencimiento < fd.emision) {
     alert('La fecha de expiración no puede ser anterior a la emisión.'); return;
   }

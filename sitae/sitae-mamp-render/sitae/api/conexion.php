@@ -19,6 +19,8 @@ function db() {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false
         ]);
+        // Hora de Honduras (UTC-6, sin horario de verano) para fechas de creación, edición y eliminación.
+        $pdo->exec(es_pg() ? "SET TIME ZONE 'America/Tegucigalpa'" : "SET time_zone = '-06:00'");
     }
     return $pdo;
 }

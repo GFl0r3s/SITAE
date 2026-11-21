@@ -1,4 +1,4 @@
-.sec { border-left:4px solid var(--sky); padding-left:.75rem; margin:2rem 0 1rem; color:var(--navy); }
-.eq { background:#fff; border:1px solid #dde3ec; border-radius:.5rem; padding:1rem; margin-bottom:.75rem; }
-fieldset:disabled .no-view { display:none; }
-fieldset:disabled .form-control, fieldset:disabled .form-select { background:#eceff4; color:#222; }
+.sec { border-left:4px solid var(--sky); padding-left:.75rem; margin:2rem 0 1rem; color:var(--titulo); }
+.eq { background:var(--bs-body-bg); border:1px solid var(--bs-border-color); border-radius:.5rem; padding:1rem; margin-bottom:.75rem; }
+fieldset:disabled .no-view, fieldset:disabled .req { display:none; }
+fieldset:disabled .form-control, fieldset:disabled .form-select { background:var(--bs-secondary-bg); color:var(--bs-body-color); }

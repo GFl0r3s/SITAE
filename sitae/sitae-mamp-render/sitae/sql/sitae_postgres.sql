@@ -67,3 +67,8 @@ CREATE TABLE IF NOT EXISTS login_intentos (
   fallos INT NOT NULL DEFAULT 0,
   ventana BIGINT NOT NULL
 );
+
+-- Papelera de licencias (borrado lógico)
+ALTER TABLE licencias ADD COLUMN IF NOT EXISTS eliminado_en TIMESTAMP NULL;
+ALTER TABLE licencias ADD COLUMN IF NOT EXISTS eliminado_por INT NULL REFERENCES usuarios(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_licencias_eliminado ON licencias(eliminado_en);

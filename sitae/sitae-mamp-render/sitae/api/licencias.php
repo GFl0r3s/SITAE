@@ -20,7 +20,7 @@ function con_equipos($l) {
 if ($lectura) {
     if (isset($_GET['id'])) {
         $id = entero($_GET['id'],'id',false);
-        $s = $pdo->prepare('SELECT * FROM licencias WHERE num=?'); $s->execute([$id]); $l = $s->fetch();
+        $s = $pdo->prepare('SELECT * FROM licencias WHERE num=? AND eliminado_en IS NULL'); $s->execute([$id]); $l = $s->fetch();
         if (!$l) responder(['error'=>'La licencia no existe.'],404);
         responder(['licencia'=>con_equipos($l)]);
     }
@@ -29,20 +29,40 @@ if ($lectura) {
         foreach ($s as $l) if (preg_match('/(\d+)$/',$l['licencia'],$m)) $n = max($n,(int)$m[1]);
         responder(['codigo'=>'CNT-MA-'.str_pad((string)($n+1),4,'0',STR_PAD_LEFT)]);
     }
+    if (isset($_GET['papelera'])) {
+        if (!in_array($u['rol'],['admin','editor'],true)) responder(['error'=>'No tienes permiso para esta operación.'],403);
+        $sel = implode(',', array_map(function($c){return 'l.'.q($c);}, ['num','licencia','codOperador','operador','eliminado_en']));
+        $s = $pdo->query("SELECT $sel, x.usuario AS eliminado_por_usuario FROM licencias l LEFT JOIN usuarios x ON x.id=l.eliminado_por WHERE l.eliminado_en IS NOT NULL ORDER BY l.eliminado_en DESC");
+        responder(['licencias'=>$s->fetchAll()]);
+    }
     $q = texto($_GET,'q',60);
     $sel = implode(',', array_map('q', ['num','licencia','codOperador','operador','indicativo','emision','vencimiento','version']));
-    $s = $pdo->prepare("SELECT $sel FROM licencias WHERE licencia " . (es_pg() ? 'ILIKE' : 'LIKE') . ' ? ORDER BY num DESC');
+    $s = $pdo->prepare("SELECT $sel FROM licencias WHERE eliminado_en IS NULL AND licencia " . (es_pg() ? 'ILIKE' : 'LIKE') . ' ? ORDER BY num DESC');
     $s->execute(['%' . addcslashes($q, '%_\\') . '%']); responder(['licencias'=>$s->fetchAll()]);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['accion'] ?? '') === 'restaurar') {
+    $idr = entero($_GET['id'] ?? null,'id',false);
+    $s = $pdo->prepare('UPDATE licencias SET eliminado_en=NULL,eliminado_por=NULL,actualizado_por=?,actualizado_en=CURRENT_TIMESTAMP,version=version+1 WHERE num=? AND eliminado_en IS NOT NULL');
+    $s->execute([$u['id'],$idr]);
+    if (!$s->rowCount()) responder(['error'=>'Esa licencia no está en la papelera.'],404);
+    responder(['ok'=>true]);
 }
 $d = cuerpo();
 $id = isset($_GET['id']) ? entero($_GET['id'],'id',false) : null;
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !$id) responder(['error'=>'Falta el identificador.'],400);
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $version = entero($d['version'] ?? null,'version',false);
-    $s = $pdo->prepare('DELETE FROM licencias WHERE num=? AND version=?'); $s->execute([$id,$version]);
+    $s = $pdo->prepare('UPDATE licencias SET eliminado_en=CURRENT_TIMESTAMP,eliminado_por=?,version=version+1 WHERE num=? AND version=? AND eliminado_en IS NULL'); $s->execute([$u['id'],$id,$version]);
     if (!$s->rowCount()) responder(['error'=>'La licencia cambió o ya no existe. Recarga la tabla.'],409);
     responder(['ok'=>true]);
 }
+$etiquetas = ['licencia'=>'Código de licencia','codOperador'=>'Código aeronave / operador','operador'=>'Operador','denominacion'=>'Denominación','rtn'=>'RTN','identidad'=>'Identidad','direccion'=>'Dirección','municipio'=>'Municipio','departamento'=>'Departamento','pais'=>'País','telefono'=>'Teléfono','correo'=>'Correo','rNombre'=>'Representante: nombre','rIdentidad'=>'Representante: identidad','rTelefono'=>'Representante: teléfono','rCorreo'=>'Representante: correo','rDireccion'=>'Representante: dirección','tipo'=>'Tipo de aeronave','modelo'=>'Modelo','fuselaje'=>'Número de fuselaje','registro'=>'Número de registro nacional','fabricacion'=>'Fecha de fabricación','aeropuerto'=>'Aeropuerto base','actividad'=>'Actividad principal','maxPasajeros'=>'Máx. cantidad de pasajeros','indicativo'=>'Indicativo de llamada','emision'=>'Fecha de emisión','vencimiento'=>'Fecha de expiración'];
+$faltan = [];
+foreach ($etiquetas as $k => $etiqueta) {
+    $v = $d[$k] ?? null;
+    if (!is_scalar($v) || trim((string)$v) === '') $faltan[] = $etiqueta;
+}
+if ($faltan) responder(['error'=>'Completa los campos obligatorios: '.implode(', ',$faltan).'.'],422);
 $datos = [];
 foreach ($campos as $k) {
     if (in_array($k,['fabricacion','emision','vencimiento'],true)) {
@@ -80,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     $version = entero($d['version'] ?? null,'version',false);
     $asignaciones = implode(',',array_map(function($c){return q($c).'=?';},$campos));
-    $s = $pdo->prepare("UPDATE licencias SET $asignaciones,actualizado_por=?,actualizado_en=CURRENT_TIMESTAMP,version=version+1 WHERE num=? AND version=?");
+    $s = $pdo->prepare("UPDATE licencias SET $asignaciones,actualizado_por=?,actualizado_en=CURRENT_TIMESTAMP,version=version+1 WHERE num=? AND version=? AND eliminado_en IS NULL");
     $s->execute(array_merge(array_values($datos),[$u['id'],$id,$version]));
     if (!$s->rowCount()) { $pdo->rollBack(); responder(['error'=>'Otra persona modificó esta licencia o la eliminó. Vuelve a abrirla.'],409); }
     $pdo->prepare('DELETE FROM equipos WHERE licencia_id=?')->execute([$id]);
