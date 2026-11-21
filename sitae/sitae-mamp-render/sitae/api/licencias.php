@@ -20,7 +20,9 @@ function con_equipos($l) {
 if ($lectura) {
     if (isset($_GET['id'])) {
         $id = entero($_GET['id'],'id',false);
-        $s = $pdo->prepare('SELECT * FROM licencias WHERE num=? AND eliminado_en IS NULL'); $s->execute([$id]); $l = $s->fetch();
+        $enPapelera = isset($_GET['papelera']);
+        if ($enPapelera && !in_array($u['rol'],['admin','editor'],true)) responder(['error'=>'No tienes permiso para esta operación.'],403);
+        $s = $pdo->prepare('SELECT l.*, x.usuario AS eliminado_por_usuario FROM licencias l LEFT JOIN usuarios x ON x.id=l.eliminado_por WHERE l.num=? AND l.eliminado_en IS ' . ($enPapelera ? 'NOT NULL' : 'NULL')); $s->execute([$id]); $l = $s->fetch();
         if (!$l) responder(['error'=>'La licencia no existe.'],404);
         responder(['licencia'=>con_equipos($l)]);
     }

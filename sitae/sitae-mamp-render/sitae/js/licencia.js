@@ -31,18 +31,21 @@ const nextCode = () => codigoSiguiente;
 async function inicializarFormulario() {
   const parametros = new URLSearchParams(location.search);
   mode = parametros.get('modo') || 'ver';
+  const enPapelera = parametros.get('papelera') === '1';
+  if (enPapelera) { mode = 'ver'; if (!puedeEditar()) { location.replace('lista.html'); return; } $('#btnVolver').href = 'papelera.html'; }
   if (!['new','edit','ver'].includes(mode)) { location.replace('lista.html'); return; }
   if (mode !== 'ver' && !puedeEditar()) { location.replace('lista.html'); return; }
   if (mode==='new') { codigoSiguiente = (await api('licencias.php?siguiente=1')).codigo; }
-  else { cur = (await api('licencias.php?id='+encodeURIComponent(parametros.get('id') || ''))).licencia; }
+  else { cur = (await api('licencias.php?id='+encodeURIComponent(parametros.get('id') || '')+(enPapelera?'&papelera=1':''))).licencia; }
   if (mode !== 'new' && !cur) { alert('La licencia no existe.'); location.replace('lista.html'); return; }
   const d = cur ? {...cur,...cur.admin} : {};
-  $('#formTitle').textContent = mode==='new' ? 'Nueva licencia' : (mode==='ver'?'Licencia ':'Editar licencia ')+cur.licencia;
+  $('#formTitle').textContent = mode==='new' ? 'Nueva licencia' : (mode==='ver'?'Licencia ':'Editar licencia ')+cur.licencia+(enPapelera?' (en la papelera)':'');
   const equipos = Object.keys(EQ).map(k=>`<h4 class="h6 mt-4">${EQ[k].t}</h4>
     ${k==='radar'?`<div class="mb-2 small"><label for="radarSi">¿Cuenta con equipo radar?</label><select id="radarSi" name="radarSi" class="form-select form-select-sm d-inline-block w-auto ms-2"><option>No</option><option ${d.radarSi==='Sí'?'selected':''}>Sí</option></select></div>`:''}
     <div id="eq-${k}">${(cur?.eq?.[k]||[]).map(r=>eqRow(k,r)).join('')}</div>
     <button type="button" class="btn btn-sm btn-outline-primary no-view" data-add="${k}"><i class="bi bi-plus"></i> Agregar equipo</button>`).join('');
-  $('#formBody').innerHTML = `
+  const aviso = enPapelera ? `<div class="alert alert-warning" role="status"><i class="bi bi-trash3"></i> Esta licencia está en la papelera (eliminada por <strong>${esc(cur.eliminado_por_usuario || '—')}</strong> el ${esc(fmtHora(cur.eliminado_en))}). Solo lectura: para editarla, primero restáurala.</div>` : '';
+  $('#formBody').innerHTML = aviso + `
     <h3 class="h5 sec">Datos de la licencia</h3><div class="row g-3">${campo(f('licencia','Código de licencia (ej. CNT-MA-0259)'),d.licencia||nextCode())}${campo(f('codOperador','Código aeronave / operador'),d.codOperador)}</div>
     <h3 class="h5 sec">Operador</h3>${grid(OPERADOR,d)}
     <h3 class="h5 sec">Datos del representante</h3>${grid(REPRES,d)}
@@ -51,7 +54,7 @@ async function inicializarFormulario() {
     <h3 class="h5 sec">3. Datos de administración</h3>${grid(ADMIN,d)}`;
   $('#fs').disabled = mode==='ver';
   $('#formBtns').innerHTML = mode==='ver'
-    ? `${puedeEditar()?`<a href="licencia.html?modo=edit&id=${encodeURIComponent(cur.num)}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar licencia</a>`:''}<a class="btn btn-outline-secondary" href="lista.html">Volver</a>`
+    ? `${puedeEditar()&&!enPapelera?`<a href="licencia.html?modo=edit&id=${encodeURIComponent(cur.num)}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar licencia</a>`:''}<a class="btn btn-outline-secondary" href="${enPapelera?'papelera.html':'lista.html'}">Volver</a>`
     : '<button type="submit" class="btn btn-primary">Guardar licencia</button><a class="btn btn-outline-secondary" href="lista.html">Cancelar</a>';
   $('#formBody').onclick = e => {
     if (mode==='ver' || !puedeEditar()) return;

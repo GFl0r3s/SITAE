@@ -1,6 +1,6 @@
 -- Consultas para el ADMINISTRADOR (Neon → SQL Editor). La eliminación definitiva solo se hace aquí.
 
--- 1) Ver la papelera (qué se borró, quién y cuándo)
+-- 1) Ver la papelera (qué se borró, quién y cuándo). También puedes usar la vista:  SELECT * FROM papelera_licencias;
 SELECT l.num, l.licencia, l.operador, l.eliminado_en, u.usuario AS eliminado_por
 FROM licencias l LEFT JOIN usuarios u ON u.id = l.eliminado_por
 WHERE l.eliminado_en IS NOT NULL
