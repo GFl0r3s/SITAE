@@ -55,3 +55,13 @@ sitae/
   instalar.php                   (una vez; se bloquea al existir un administrador)
   Dockerfile                     (para Render)
 ```
+
+---
+## Novedades (versión 3)
+- **Campos obligatorios:** todos los datos de licencia, operador, representante, aeronave y administración, excepto *Fax*, *Otro teléfono* y *Observaciones*. Se valida en el formulario y en el servidor.
+- **Papelera:** al eliminar, la licencia no se borra: pasa a la papelera con el usuario y la fecha de eliminación (`eliminado_por`, `eliminado_en`). Editores y administradores la ven en **Papelera** y pueden **restaurarla**. La eliminación definitiva se hace solo desde la base de datos (ver `sql/papelera_consultas_admin.sql`).
+  - Instalaciones existentes: ejecutar **una vez** `sql/migracion_papelera_postgres.sql` (Neon) o `sql/migracion_papelera_mysql.sql` (MAMP) **antes** de subir el código nuevo.
+- **Favicon:** `img/favicon.png` (reemplázalo por tu imagen con el mismo nombre; se usa en todas las pestañas).
+- **Celular:** las tablas se muestran como tarjetas en pantallas pequeñas.
+- **Modo oscuro:** interruptor en la barra superior (y en el inicio de sesión). Se recuerda por navegador.
+- Las fechas de creación/edición/eliminación se guardan en hora de Honduras (UTC-6).
